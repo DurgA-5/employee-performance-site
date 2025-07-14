@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About The Technology | Performix.AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark-navy: #0D1B2A;
+            --bg-mid-navy: #1B263B;
+            --text-primary: #E0E1DD;
+            --text-secondary: #A9B4C2;
+            --accent-gold: #FFC300;
+            --accent-gold-darker: #e6b000;
+            --border-color: #415A77;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-dark-navy);
+            min-height: 100vh;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        .container { width: 90%; max-width: 1100px; margin: 0 auto; position: relative; z-index: 2; }
+        .section { padding: 6rem 0; }
+
+        /* --- Animations & Reveal --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Navigation --- */
+        .navbar {
+            padding: 1.5rem 0;
+            background-color: rgba(13, 27, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #1c2e42;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 1.75rem; }
+        .logo span { color: var(--accent-gold); }
+        .nav-links a { font-family: 'Manrope', sans-serif; font-weight: 600; color: var(--text-secondary); text-decoration: none; margin-left: 2.5rem; transition: color 0.3s ease; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent-gold); }
+
+        /* --- General Content Styles --- */
+        .title-wrapper { text-align: center; max-width: 800px; margin: 0 auto 5rem auto; }
+        .title-wrapper h2 { font-family: 'Manrope', sans-serif; font-size: 2.8rem; margin-bottom: 1rem; }
+        .title-wrapper p { color: var(--text-secondary); font-size: 1.1rem; }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr; /* Give more space for text */
+            align-items: center;
+            gap: 4rem;
+            margin-bottom: 6rem;
+        }
+        .content-grid:last-child { margin-bottom: 0; }
+        .content-grid.reverse { grid-template-columns: 1.5fr 1fr; }
+        .content-grid.reverse .image-container { order: 2; } /* Reorder image for reverse layout */
+
+        .image-container {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .image-container:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .content-text h3 { font-family: 'Manrope', sans-serif; font-size: 2rem; margin-bottom: 1rem; }
+        .content-text p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1.05rem; }
+        .content-text strong { color: var(--accent-gold); font-weight: 600; }
+        .content-text code { background-color: var(--bg-mid-navy); color: var(--accent-gold); padding: 3px 6px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; }
+
+        /* --- Footer --- */
+        .site-footer { background-color: #07101a; padding: 5rem 0 3rem 0; border-top: 1px solid var(--border-color); }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 4rem; }
+        .footer-about h4 { font-family: 'Manrope', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; }
+        .footer-about h4 span { color: var(--accent-gold); }
+        .footer-about p { color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem; }
+        .footer-col h5 { font-family: 'Manrope', sans-serif; font-size: 1.1rem; margin-bottom: 1.25rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer-col ul { list-style: none; padding: 0; }
+        .footer-col li { margin-bottom: 0.75rem; }
+        .footer-col a { color: var(--text-secondary); text-decoration: none; transition: color 0.3s; }
+        .footer-col a:hover { color: var(--accent-gold); }
+        .footer-bottom { text-align: center; padding-top: 3rem; margin-top: 3rem; border-top: 1px solid #1c2e42; }
+        .footer-bottom p { color: #7789a1; font-size: 0.9rem; }
+        
+        @media (max-width: 992px) {
+            .content-grid, .content-grid.reverse { grid-template-columns: 1fr; text-align: center; }
+            .content-grid.reverse .image-container { order: -1; } /* Keep image on top on mobile */
+            .image-container { margin: 0 auto 2rem auto; max-width: 500px; }
+            .footer-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <header class="navbar">
+        <div class="container nav-content">
+            <div class="logo">Performix<span>.AI</span></div>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/about" class="active">About the Technology</a>
+                <a href="/predict">Run Analysis</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section container">
+            <div class="title-wrapper reveal">
+                <h2>The Architecture of Intelligence</h2>
+                <p>This project is an exploration of the complete machine learning workflow, from raw data ingestion to a fully operational predictive web application. Below, we detail the methodology, technology, and data that power Performix.AI.</p>
+            </div>
+
+            <div class="content-grid reveal">
+                <div class="image-container">
+                    <img src="data:image/webp;base64,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" alt="Team collaborating on a strategic plan">
+                </div>
+                <div class="content-text">
+                    <h3>Project Mission & Philosophy</h3>
+                    <p>The core philosophy of Performix.AI is to transform data from a passive record into a <strong>strategic asset</strong>. Our mission is to provide managers and HR professionals with a quantitative, forward-looking tool to support their most critical decisions. By moving beyond traditional reporting and embracing predictive analytics, organizations can foster a culture of proactive support, continuous improvement, and operational excellence.</p>
+                </div>
+            </div>
+
+            <div class="content-grid reverse reveal">
+                <div class="content-text">
+                    <h3>The Technology Stack</h3>
+                    <p>The entire system is built on a foundation of powerful and industry-standard open-source technologies, chosen for their robustness and performance.</p>
+                    <p>The web application is served by <strong>Flask</strong>, a lightweight Python framework perfect for creating efficient APIs. Data processing is handled by <strong>Pandas</strong> and <strong>NumPy</strong>, the cornerstones of data science in Python. For the machine learning itself, we employ a dual-powerhouse: <strong>Scikit-learn</strong> provides the foundational tools for data pre-processing, while the high-performance <strong>XGBoost</strong> library serves as our core predictive engine, renowned for its accuracy and speed.</p>
+                </div>
+                <div class="image-container">
+                     <img src="data:image/webp;base64,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" alt="Abstract data connections and server lights">
+                </div>
+            </div>
+
+            <div class="content-grid reveal">
+                <div class="image-container">
+                    <img src="https://cdn.educba.com/academy/wp-content/uploads/2023/07/Feature-Engineering.jpg "alt="A dashboard with complex charts and data visualizations">
+                </div>
+                <div class="content-text">
+                    <h3>The Dataset & Feature Engineering</h3>
+                    <p>Our model's intelligence is derived from the <strong>"Garments Worker Productivity"</strong> dataset. The authenticity of this real-world data is crucial, as it contains the subtle, complex relationships that synthetic data cannot replicate.</p>
+                    <p>Key features such as <code>team_size</code>, task complexity (<code>smv</code>), and financial <code>incentive</code> levels are analyzed. During the pre-processing stage, we perform feature engineering to clean the data, handle categorical variables like department names, and ensure the data is in a perfect format for the model to learn effectively.</p>
+                </div>
+            </div>
+
+                  <div class="content-grid reverse reveal">
+                 <div class="content-text">
+                    <h3>The Predictive Model in Action</h3>
+                    <p>The heart of Performix.AI is a sophisticated <strong>XGBoost Regressor</strong> model. XGBoost (Extreme Gradient Boosting) was selected after being benchmarked against other models like Linear Regression and Random Forest. It consistently demonstrated superior performance due to its ability to handle complex, non-linear relationships in the data and its built-in regularization to prevent overfitting.</p>
+                    <p>When you input a scenario, the data is processed and fed into this trained model, which then computes a precise productivity score. This isn't just a guess; it's a prediction backed by the learned patterns from thousands of historical data points.</p>
+                </div>
+                <div class="image-container">
+                     <img src="https://saiwa.ai/_next/image/?url=https:%2F%2Fsaiwa.ai%2Fuploads%2Fxgboost_Machine_Learning_1024x1024_67e48f0f80.webp&w=828&q=75" alt="Abstract visualization of an artificial intelligence neural network">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <h4>Performix<span>.AI</span></h4>
+                    <p>A demonstration project showcasing the power of machine learning in providing actionable workforce intelligence for modern organizations.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Navigation</h5>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/about">About the Technology</a></li>
+                        <li><a href="/predict">Run Analysis</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Core Technologies</h5>
+                    <ul>
+                        <li><a href="https://pythonbasics.org/what-is-flask-python/">Python & Flask</a></li>
+                        <li><a href="https://scikit-learn.org/">Scikit-learn & XGBoost</a></li>
+                        <li><a href="https://pandas.pydata.org/">Pandas & NumPy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 Performix.AI - A Machine Learning Project for Educational Purposes</p>
+                <p>Developed by Durga Prasad Papugani</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // This script is identical to the one in the animated home.html for consistency
+        document.addEventListener('DOMContentLoaded', function() {
+            // On-Scroll Reveal Animation
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            // Animated Particle Background
+            const canvas = document.getElementById('particle-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                let particles = [];
+                const numParticles = 70;
+
+                class Particle {
+                    constructor(x, y, size, color, speed) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = size;
+                        this.color = color;
+                        this.speed = speed;
+                        this.angle = Math.random() * 360 * (Math.PI / 180);
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                    update() {
+                        this.x += this.speed * Math.cos(this.angle);
+                        this.y += this.speed * Math.sin(this.angle);
+                        if (this.x < 0 || this.x > canvas.width) this.angle = Math.PI - this.angle;
+                        if (this.y < 0 || this.y > canvas.height) this.angle = -this.angle;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        const size = Math.random() * 2 + 1;
+                        const x = Math.random() * canvas.width;
+                        const y = Math.random() * canvas.height;
+                        const color = `rgba(255, 195, 0, ${Math.random() * 0.5 + 0.1})`;
+                        const speed = Math.random() * 0.3 + 0.1;
+                        particles.push(new Particle(x, y, size, color, speed));
+                    }
+                }
+
+                let animationFrameId;
+                function animateParticles() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => { p.update(); p.draw(); });
+                    animationFrameId = requestAnimationFrame(animateParticles);
+                }
+
+                initParticles();
+                animateParticles();
+
+                window.addEventListener('resize', () => {
+                    cancelAnimationFrame(animationFrameId);
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    initParticles();
+                    animateParticles();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

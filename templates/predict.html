@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Analysis | Performix.AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark-navy: #0D1B2A;
+            --bg-mid-navy: #1B263B;
+            --text-primary: #E0E1DD;
+            --text-secondary: #A9B4C2;
+            --accent-gold: #FFC300;
+            --accent-gold-darker: #e6b000;
+            --border-color: #415A77;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-dark-navy);
+            min-height: 100vh;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        .container { width: 90%; max-width: 1000px; /* Wider container for two columns */ margin: 0 auto; position: relative; z-index: 2; }
+        .section { padding: 6rem 0; }
+
+        /* --- Animations & Reveal --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Navigation --- */
+        .navbar {
+            padding: 1.5rem 0;
+            background-color: rgba(13, 27, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #1c2e42;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 1.75rem; }
+        .logo span { color: var(--accent-gold); }
+        .nav-links a { font-family: 'Manrope', sans-serif; font-weight: 600; color: var(--text-secondary); text-decoration: none; margin-left: 2.5rem; transition: color 0.3s ease; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent-gold); }
+
+        /* --- Form Styles --- */
+        .form-section-container {
+            background: var(--bg-mid-navy);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 3rem 4rem;
+        }
+        .title-wrapper { text-align: center; margin-bottom: 3rem; }
+        .title-wrapper h2 { font-family: 'Manrope', sans-serif; font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .title-wrapper p { color: var(--text-secondary); font-size: 1.1rem; }
+        
+        /* --- New Two-Column Layout --- */
+        .form-layout {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr; /* Form on left, guide on right */
+            gap: 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600;
+            font-size: 1rem; /* Slightly smaller for compactness */
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            color: var(--text-primary);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-dark-navy);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 15px rgba(255, 195, 0, 0.2);
+        }
+        
+        .submit-button {
+            background-color: var(--accent-gold);
+            color: var(--bg-dark-navy);
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 0.9rem 2.2rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .submit-button:hover {
+            background-color: var(--accent-gold-darker);
+            box-shadow: 0 0 20px rgba(255, 195, 0, 0.3);
+        }
+
+        /* --- New Input Guide Styles --- */
+        .input-guide {
+            background-color: rgba(13, 27, 42, 0.5);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+        }
+        .input-guide h3 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.4rem;
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .input-guide p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+         .input-guide strong {
+            color: var(--text-primary);
+            font-weight: 600;
+         }
+
+        /* --- Footer --- */
+        .site-footer { background-color: #07101a; padding: 5rem 0 3rem 0; border-top: 1px solid var(--border-color); margin-top: 6rem; }
+        
+        @media (max-width: 992px) {
+            .form-layout { grid-template-columns: 1fr; }
+            .input-guide { margin-top: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <header class="navbar">
+        <div class="container nav-content">
+            <div class="logo">Performix<span>.AI</span></div>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/about">About the Technology</a>
+                <a href="/predict" class="active">Run Analysis</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section container">
+            <div class="form-section-container reveal">
+                <div class="title-wrapper">
+                    <h2>Predictive Analysis Engine</h2>
+                    <p>Input scenario parameters to generate a productivity forecast.</p>
+                </div>
+
+                <div class="form-layout">
+                    <form action="/submit" method="post" class="form-fields">
+                        <div class="form-group">
+                            <label for="department">Department</label>
+                            <input type="text" id="department" name="department" required list="department-list" placeholder="e.g., Sewing or Finishing">
+                            <datalist id="department-list">
+                                <option value="Sewing"></option>
+                                <option value="Finishing"></option>
+                            </datalist>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="team">Team ID (1-12)</label>
+                            <input type="number" id="team" name="team" required min="1" max="12" placeholder="Enter a number">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="no_of_workers">Number of Workers</label>
+                            <input type="number" id="no_of_workers" name="no_of_workers" required min="1" placeholder="e.g., 8">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="smv">Task Complexity (SMV)</label>
+                            <input type="number" id="smv" name="smv" step="0.01" required min="0" placeholder="e.g., 15.2">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="targeted_productivity">Productivity Target</label>
+                            <input type="number" id="targeted_productivity" name="targeted_productivity" step="0.01" min="0.1" max="1.0" required placeholder="e.g., 0.80">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="incentive">Financial Incentive ($)</label>
+                            <input type="number" id="incentive" name="incentive" required min="0" placeholder="Total bonus amount">
+                        </div>
+
+                         <div class="form-group">
+                            <label for="over_time">Total Team Overtime (Minutes)</label>
+                            <input type="number" id="over_time" name="over_time" required min="0" placeholder="Total minutes for team">
+                        </div>
+
+                        <button type="submit" class="submit-button">Generate Prediction</button>
+                    </form>
+
+                    <aside class="input-guide">
+                        <h3>Input Guide</h3>
+                        <p>
+                            <strong>Task Complexity (SMV):</strong> The "Standard Minute Value" represents the time a task should take. A higher SMV (e.g., 40) means a more complex task, while a lower SMV (e.g., 5) indicates a simpler one.
+                        </p>
+                        <p>
+                           <strong>Productivity Target:</strong> This is the efficiency goal set for the team, ranging from 0.1 (10%) to 1.0 (100%). A common target is <strong>0.80</strong>.
+                        </p>
+                        <p>
+                            Providing accurate inputs ensures the most reliable forecast from our AI model.
+                        </p>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <script>
+        // This script is identical to the one in the animated home.html for consistency
+        document.addEventListener('DOMContentLoaded', function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+       
+        // This script is identical to the one in the animated home.html for consistency
+        document.addEventListener('DOMContentLoaded', function() {
+            // On-Scroll Reveal Animation
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            // Animated Particle Background
+            const canvas = document.getElementById('particle-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                let particles = [];
+                const numParticles = 70;
+
+                class Particle {
+                    constructor(x, y, size, color, speed) {
+                        this.x = x;
+                        this.y = y;
+                        this.size = size;
+                        this.color = color;
+                        this.speed = speed;
+                        this.angle = Math.random() * 360 * (Math.PI / 180);
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.fill();
+                    }
+                    update() {
+                        this.x += this.speed * Math.cos(this.angle);
+                        this.y += this.speed * Math.sin(this.angle);
+                        if (this.x < 0 || this.x > canvas.width) this.angle = Math.PI - this.angle;
+                        if (this.y < 0 || this.y > canvas.height) this.angle = -this.angle;
+                    }
+                }
+
+                function initParticles() {
+                    particles = [];
+                    for (let i = 0; i < numParticles; i++) {
+                        const size = Math.random() * 2 + 1;
+                        const x = Math.random() * canvas.width;
+                        const y = Math.random() * canvas.height;
+                        const color = `rgba(255, 195, 0, ${Math.random() * 0.5 + 0.1})`;
+                        const speed = Math.random() * 0.3 + 0.1;
+                        particles.push(new Particle(x, y, size, color, speed));
+                    }
+                }
+
+                let animationFrameId;
+                function animateParticles() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => { p.update(); p.draw(); });
+                    animationFrameId = requestAnimationFrame(animateParticles);
+                }
+
+                initParticles();
+                animateParticles();
+
+                window.addEventListener('resize', () => {
+                    cancelAnimationFrame(animationFrameId);
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    initParticles();
+                    animateParticles();
+                });
+            }
+        });
+    </script>
+   
+</body>
+</html>

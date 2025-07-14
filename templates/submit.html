@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Report | Performix.AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark-navy: #0D1B2A;
+            --bg-mid-navy: #1B263B;
+            --text-primary: #E0E1DD;
+            --text-secondary: #A9B4C2;
+            --accent-gold: #FFC300;
+            --accent-gold-darker: #e6b000;
+            --border-color: #415A77;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-dark-navy);
+            min-height: 100vh;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        .container { width: 90%; max-width: 800px; /* Adjusted max-width for single card */ margin: 0 auto; position: relative; z-index: 2; }
+        .section { padding: 6rem 0; }
+
+        /* --- Animations & Reveal --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Navigation --- */
+        .navbar {
+            padding: 1.5rem 0;
+            background-color: rgba(13, 27, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #1c2e42;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 1.75rem; }
+        .logo span { color: var(--accent-gold); }
+        .nav-links a { font-family: 'Manrope', sans-serif; font-weight: 600; color: var(--text-secondary); text-decoration: none; margin-left: 2.5rem; transition: color 0.3s ease; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent-gold); }
+
+        /* --- Report Card Styles --- */
+        .title-wrapper { text-align: center; margin-bottom: 3rem; }
+        .title-wrapper h2 { font-family: 'Manrope', sans-serif; font-size: 2.5rem; margin-bottom: 0.5rem; }
+        
+        .report-card {
+            background: var(--bg-mid-navy);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 3rem 4rem;
+            text-align: center; /* Center align content within the card */
+        }
+        
+        .report-header h3 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .prediction-value {
+            font-family: 'Manrope', sans-serif;
+            font-size: 8rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--accent-gold);
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 2.5rem 0;
+        }
+
+        .report-body h4 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        .report-body p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            max-width: 600px; /* Constrain width for readability */
+            margin: 0 auto; /* Center the paragraph */
+        }
+
+        .report-footer {
+            text-align: left; /* Align summary list text to the left */
+        }
+        .report-footer h4 {
+             font-family: 'Manrope', sans-serif;
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        .summary-list {
+            list-style: none;
+            padding: 0;
+            font-size: 0.95rem;
+        }
+        .summary-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #2a3a50;
+        }
+        .summary-list li:last-child {
+            border-bottom: none;
+        }
+        .summary-list strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--accent-gold);
+            color: var(--bg-dark-navy);
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 0.8rem 2.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-top: 3rem;
+        }
+        .back-button:hover {
+            background-color: var(--accent-gold-darker);
+            box-shadow: 0 0 20px rgba(255, 195, 0, 0.3);
+        }
+
+        /* --- Footer --- */
+        .site-footer { background-color: #07101a; padding: 5rem 0 3rem 0; border-top: 1px solid var(--border-color); margin-top: 6rem; }
+    </style>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <header class="navbar">
+        <div class="container nav-content">
+            <div class="logo">Performix<span>.AI</span></div>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/about">About the Technology</a>
+                <a href="/predict">Run Analysis</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section container">
+            <div class="title-wrapper reveal">
+                <h2>Executive Report</h2>
+            </div>
+
+            <div class="report-card reveal">
+                <!-- Section 1: The Main Result -->
+                <div class="report-header">
+                    <h3>Predicted Productivity Score</h3>
+                    <div class="prediction-value">
+                        {{ prediction if prediction else "N/A" }}
+                    </div>
+                </div>
+
+                <hr />
+
+                <!-- Section 2: The Strategic Insight -->
+                <div class="report-body">
+                    <h4>Strategic Analysis</h4>
+                    <p>{{ remark if remark else "No analysis available." }}</p>
+                </div>
+                
+                <!-- Section 3: The Supporting Data (Conditional) -->
+                {% if summary %}
+                <hr />
+                <div class="report-footer">
+                    <h4>Input Parameters</h4>
+                    <ul class="summary-list">
+                        <li><span>Department</span> <strong>{{ summary.department }}</strong></li>
+                        <li><span>Team Size</span> <strong>{{ summary.no_of_workers }}</strong></li>
+                        <li><span>Task Complexity (SMV)</span> <strong>{{ summary.smv }}</strong></li>
+                        <li><span>Productivity Target</span> <strong>{{ summary.targeted_productivity }}</strong></li>
+                         <li><span>Financial Incentive</span> <strong>${{ summary.incentive }}</strong></li>
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Final Action Button -->
+                <a href="/predict" class="back-button">Run New Analysis</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <!-- Full footer content would be here -->
+    </footer>
+
+    <script>
+        // This script is identical to the one in the animated home.html for consistency
+        document.addEventListener('DOMContentLoaded', function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
